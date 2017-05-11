@@ -11,28 +11,75 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-   titlePanel("Test Page For File Upload"),
-   textInput(inputId = "intext", 
-             label= "Description of the Input Dataset",
-             value = "This is a test data set",
-             placeholder="Write your description here"),
-   fileInput(inputId = "file", 
-             label = "Choose File to Upload",
-             multiple = TRUE,
-             buttonLabel = "Choose",
-             placeholder = "No file chosen"),
-   actionButton(inputId="upload", label = "Upload"),
-   actionButton(inputId="normal", label = "Normal Plot"),
-   actionButton(inputId = "uniform", label = "Uniform Plot"),
-   checkboxInput(inputId="confirm_upload",
-                 label = "I agree to upload the files on this page"),
-   dateInput(inputId = "calendar", label = "Choose the date to upload"),
+  #fluidRow() adds rows to the grid. Each new row goes below the previous row.
+  #column(width, offset)
+  #can use panels to group elements
    
-   dataTableOutput("table"),
-   textOutput("outtext"),
-   verbatimTextOutput("summary"),
-   plotOutput("hist"),
-   actionButton(inputId="click", label = "Click Here To View Summary Stats")
+   
+   
+   #tabsetPanel(
+  navlistPanel(
+     
+   tabPanel("Overwatch",
+   column(width=5,
+          offset=5,
+          tags$p(tags$em(tags$strong("Test Image Placement Here")),
+                 tags$br(),
+                 #https:// image urls won't display in the output of the app
+                 tags$img(height=100,
+                          width=100,
+                          src="http://us.battle.net/forums/static/images/social-thumbs/overwatch.png"),
+                 tags$img(height=100,
+                          width=100,
+                          src="mercy.jpg")
+                 )
+          )),
+   
+   tabPanel("Test File UPload",
+            titlePanel("Test Page For File Upload"),
+            
+            tags$p("Please Find", 
+                   tags$a(href="https://shiny.rstudio.com/tutorial/", 
+                          tags$strong("Shiny Tutorial Link Here"))),
+            textInput(inputId = "intext", 
+                      label= "Description of the Input Dataset",
+                      value = "This is a test data set",
+                      placeholder="Write your description here"),
+            fileInput(inputId = "file", 
+                      label = "Choose File to Upload",
+                      multiple = TRUE,
+                      buttonLabel = "Choose",
+                      placeholder = "No file chosen"),
+            checkboxInput(inputId="confirm_upload",
+                          label = "I agree to upload the files on this page"),
+            actionButton(inputId="upload", label = "Upload"),
+            dataTableOutput("table"),
+            textOutput("outtext"),
+            verbatimTextOutput("summary"),
+            actionButton(inputId="click", label = "Click Here To View Summary Stats"),
+            dateInput(inputId = "calendar", label = "Choose the date to upload")),
+   tabPanel("Normal vs Uniform",
+            actionButton(inputId="normal", label = "Normal Plot"),
+            actionButton(inputId = "uniform", label = "Uniform Plot"),
+            plotOutput("hist"))
+   )
+   
+          
+  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    
    
    
