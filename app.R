@@ -23,7 +23,7 @@ ui <- fluidPage(
    tabPanel("Overwatch",
    column(width=5,
           offset=5,
-          tags$p(tags$em(tags$strong("Test Image Placement Here")),
+          tags$p(tags$em(tags$strong("Overwatch Icon")),
                  tags$br(),
                  #https:// image urls won't display in the output of the app
                  tags$img(height=100,
@@ -31,59 +31,93 @@ ui <- fluidPage(
                           src="http://us.battle.net/forums/static/images/social-thumbs/overwatch.png"),
                  tags$img(height=100,
                           width=100,
-                          src="mercy.jpg")
-                 )
+                          src="http://images.pushsquare.com/news/2016/05/play_overwatch_early_and_win_the_game_on_the_ps4/attachment/0/original.jpg")
+                 ),
+          tags$p(tags$em(tags$strong("Mercy")),
+                 tags$br(),
+                 #https:// image urls won't display in the output of the app
+                 tags$img(height=100,
+                          width=100,
+                          src="mercy.jpg"),
+                 tags$img(height=100,
+                          width=100,
+                          src="mercy_2.jpg")
+          ),
+          
+          tags$p(tags$em(tags$strong("Genji")),
+                 tags$br(),
+                 #https:// image urls won't display in the output of the app
+                 tags$img(height=100,
+                          width=100,
+                          src="genji.jpg"),
+                 tags$img(height=100,
+                          width=100,
+                          src="genji_2.jpg")
+          ),
+          tags$p(tags$em(tags$strong("Bastion")),
+                 tags$br(),
+                 #https:// image urls won't display in the output of the app
+                 tags$img(height=100,
+                          width=100,
+                          src="http://i2.wp.com/www.cgmeetup.net/home/wp-content/uploads/2016/08/Overwatch-The-Last-Bastion-Animated-Short-7.jpg"),
+                 tags$img(height=100,
+                          width=100,
+                          src="http://assets.vg247.com/current//2015/06/overwatch_bastion.jpg")
+          ),
+          tags$p(tags$em(tags$strong("Mei")),
+                 tags$br(),
+                 #https:// image urls won't display in the output of the app
+                 tags$img(height=100,
+                          width=100,
+                          src="http://cdn2.vox-cdn.com/uploads/chorus_asset/file/7867475/mei_christmas.jpg"),
+                 tags$img(height=100,
+                          width=100,
+                          src="http://orig13.deviantart.net/0c3b/f/2016/176/f/4/mei_by_pmolita-da7lgb2.png")
+          )
           )),
    
    tabPanel("Test File UPload",
-            titlePanel("Test Page For File Upload"),
+            sidebarLayout(
+              sidebarPanel(textInput(inputId = "intext", 
+                                     label= "Description of the Input Dataset",
+                                     value = "This is a test data set",
+                                     placeholder="Write your description here"),
+                           fileInput(inputId = "file", 
+                                     label = "Choose File to Upload",
+                                     multiple = TRUE,
+                                     buttonLabel = "Choose",
+                                     placeholder = "No file chosen"),
+                           checkboxInput(inputId="confirm_upload",
+                                         label = "I agree to upload the files on this page"),
+                           actionButton(inputId="upload", label = "Upload"),
+                           dateInput(inputId = "calendar", label = "Choose the date to upload")),
+              mainPanel(titlePanel("Test Page For File Upload"),
+                        tags$p("Please Find", 
+                               tags$a(href="https://shiny.rstudio.com/tutorial/", 
+                                      tags$strong("Shiny Tutorial Link Here"))),
+                        dataTableOutput("table"),
+                        textOutput("outtext"),
+                        verbatimTextOutput("summary"),
+                        actionButton(inputId="click", label = "Click Here To View Summary Stats")
+                        )
+                       )
+            ),
             
-            tags$p("Please Find", 
-                   tags$a(href="https://shiny.rstudio.com/tutorial/", 
-                          tags$strong("Shiny Tutorial Link Here"))),
-            textInput(inputId = "intext", 
-                      label= "Description of the Input Dataset",
-                      value = "This is a test data set",
-                      placeholder="Write your description here"),
-            fileInput(inputId = "file", 
-                      label = "Choose File to Upload",
-                      multiple = TRUE,
-                      buttonLabel = "Choose",
-                      placeholder = "No file chosen"),
-            checkboxInput(inputId="confirm_upload",
-                          label = "I agree to upload the files on this page"),
-            actionButton(inputId="upload", label = "Upload"),
-            dataTableOutput("table"),
-            textOutput("outtext"),
-            verbatimTextOutput("summary"),
-            actionButton(inputId="click", label = "Click Here To View Summary Stats"),
-            dateInput(inputId = "calendar", label = "Choose the date to upload")),
    tabPanel("Normal vs Uniform",
-            actionButton(inputId="normal", label = "Normal Plot"),
-            actionButton(inputId = "uniform", label = "Uniform Plot"),
-            plotOutput("hist"))
+            sidebarLayout(
+              sidebarPanel(
+                actionButton(inputId="normal", label = "Normal Plot"),
+                actionButton(inputId = "uniform", label = "Uniform Plot")
+                
+              ),
+              mainPanel(plotOutput("hist"))
+           )
    )
+  )
+)
    
           
   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-)
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -127,10 +161,12 @@ server <- function(input, output) {
   
   # reactiveValues() creates a list of reactive values to manipulate programmatically
   # can assign reactive values
-  rv <- reactiveValues(data = rnorm(100))
+  rv <- reactiveValues(data = rnorm(100),title="Let's Decide What Distribution We Want")
   observeEvent(input$normal, {rv$data <- rnorm(100)})
+  observeEvent(input$normal, {rv$title <- "Histogram of Normal Distribution"})
   observeEvent(input$uniform, {rv$data <- runif(100)})
-  output$hist <- renderPlot({hist(rv$data)})
+  observeEvent(input$uniform, {rv$title <- "Histogram of Uniform Distribution"})
+  output$hist <- renderPlot({hist(rv$data, main=rv$title)})
   
   
   
