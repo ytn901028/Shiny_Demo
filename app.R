@@ -88,7 +88,8 @@ ui <- fluidPage(
                                      buttonLabel = "Choose",
                                      placeholder = "No file chosen"),
                            checkboxInput(inputId="confirm_upload",
-                                         label = "I agree to upload the files on this page"),
+                                         label = "I agree to upload the files on this page",
+                                         value = FALSE),
                            actionButton(inputId="upload", label = "Upload"),
                            dateInput(inputId = "calendar", label = "Choose the date to upload")),
               mainPanel(titlePanel("Test Page For File Upload"),
@@ -137,7 +138,10 @@ server <- function(input, output) {
   
   # Using eventReactive() to delay actions
   # eventReactive() is a REACTIVE EXPRESSION that only responds to specific values
-  upload_data <- eventReactive(input$upload,{data()})
+  upload_data <- eventReactive(input$upload,
+                               {
+                                 if (input$confirm_upload == TRUE)
+                                   data()})
 
   
   output$table <- renderDataTable({
