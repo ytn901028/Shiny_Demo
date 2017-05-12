@@ -88,9 +88,11 @@ ui <- fluidPage(
                                      buttonLabel = "Choose",
                                      placeholder = "No file chosen"),
                            checkboxInput(inputId="confirm_upload",
-                                         label = "I agree to upload the files on this page"),
+                                         label = "I agree to upload the files on this page",
+                                         value = FALSE),
                            actionButton(inputId="upload", label = "Upload"),
-                           dateInput(inputId = "calendar", label = "Choose the date to upload")),
+                           dateInput(inputId = "calendar", label = "Choose the date to upload"),
+                           downloadButton("download","Download")),
               mainPanel(titlePanel("Test Page For File Upload"),
                         tags$p("Please Find", 
                                tags$a(href="https://shiny.rstudio.com/tutorial/", 
@@ -113,7 +115,7 @@ ui <- fluidPage(
               mainPanel(plotOutput("hist"))
            )
    )
-  )
+   )
 )
    
           
@@ -126,7 +128,9 @@ server <- function(input, output) {
   # Can build another reactive object by calling existing ones
   inFile <- reactive({input$file})
   path <- reactive({inFile()$datapath})
+  file_name <- reactive({inFile()$name})
   data <- reactive({read.csv(path())})
+  
   
   # isolate() example
   # isolate() returns a non-reactive value
@@ -137,7 +141,10 @@ server <- function(input, output) {
   
   # Using eventReactive() to delay actions
   # eventReactive() is a REACTIVE EXPRESSION that only responds to specific values
-  upload_data <- eventReactive(input$upload,{data()})
+  upload_data <- eventReactive(input$upload,
+                               {
+                                 if (input$confirm_upload == TRUE)
+                                   data()})
 
   
   output$table <- renderDataTable({
@@ -145,6 +152,7 @@ server <- function(input, output) {
       return(NULL)
     #data()         ## using data() only when you want to automatically pop up the table
     upload_data()})  ## using upload_data() when you want to upload until click the button
+  
   
   output$summary <- renderPrint({
     if (is.null(inFile()))
@@ -158,6 +166,15 @@ server <- function(input, output) {
       return(NULL)
     print(summary(data()))
     print(as.numeric(input$click))})
+  
+  output$download <- downloadHandler(
+    filename = function(){
+      paste(file_name(),'.csv', sep='')
+    },
+    content = function(file) {
+      write.csv(data(), file, row.names=FALSE, quote=FALSE)
+    }
+  )
   
   # reactiveValues() creates a list of reactive values to manipulate programmatically
   # can assign reactive values
