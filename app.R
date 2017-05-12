@@ -90,6 +90,16 @@ ui <- fluidPage(
                            checkboxInput(inputId="confirm_upload",
                                          label = "I agree to upload the files on this page",
                                          value = FALSE),
+                           tags$br(),
+                           checkboxInput(inputId="header",
+                                         label = "Header",
+                                         value = FALSE),
+                           
+                           radioButtons('sep',
+                                        'Seperator',
+                                        c("Comma" = ',',
+                                          "Tab" = '\t',
+                                          "Semicolon" = ';')),
                            actionButton(inputId="upload", label = "Upload"),
                            dateInput(inputId = "calendar", label = "Choose the date to upload"),
                            downloadButton("download","Download")),
@@ -129,7 +139,7 @@ server <- function(input, output) {
   inFile <- reactive({input$file})
   path <- reactive({inFile()$datapath})
   file_name <- reactive({inFile()$name})
-  data <- reactive({read.csv(path())})
+  data <- reactive({read.csv(path(), sep=input$sep, header=input$header)})
   
   
   # isolate() example
