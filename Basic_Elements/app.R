@@ -23,7 +23,7 @@ ui <- fluidPage(
    tabPanel("Overwatch",
    column(width=5,
           offset=5,
-          tags$p(tags$em(tags$strong("Overwatch Icon")),
+          tags$p(tags$em(tags$strong("TenX Images")),
                  tags$br(),
                  #https:// image urls won't display in the output of the app
                  tags$img(height=100,
