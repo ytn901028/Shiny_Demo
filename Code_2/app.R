@@ -129,7 +129,9 @@ server <- function(input, output, session) {
        geom_map(data=agg_data(), aes(fill = agg_data()[input$type]), map = state_map, color ="black") +
        expand_limits(x = state_map$long, y = state_map$lat) +
        coord_map(projection="mercator") +
-       theme(legend.position = "bottom",
+       theme(plot.title = element_text(hjust=0.5),
+             legend.position = "bottom",
+             legend.title = element_blank(),
              axis.ticks = element_blank(), 
              axis.title = element_blank(), 
              axis.text =  element_blank()) +
