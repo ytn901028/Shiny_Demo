@@ -13,7 +13,7 @@ require(gridExtra)
 require(maps)
 library(mapproj)
 library(ggplot2)
-library(shinyjs)
+
 
 ### Global Variables ###
 
@@ -162,7 +162,7 @@ server <- function(input, output, session) {
        },
      content = function(file) {
        device <- function(...,width,height){
-         grDevices::png(...,width=width,height=height,res=300,units='in')
+         grDevices::png(...,width=width,height=height,res=300,units='in',bg='transparent')
        }
        ggsave(file,plot=final_map(),height=input$height,width=input$width,device=device)
      }
