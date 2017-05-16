@@ -12,6 +12,7 @@ library(data.table)
 require(gridExtra)
 require(maps)
 library(mapproj)
+library(ggplot2)
 
 ### Global Variables ###
 
@@ -44,7 +45,7 @@ ui <- fluidPage(
               dataTableOutput("table"),
               textOutput('columns')
               ),
-     tabPanel("Visualization",
+     tabPanel("Data Visualization",
               selectInput("year",
                           "Choose a Year",
                           list (`2013` = 2013,
@@ -56,16 +57,20 @@ ui <- fluidPage(
                                 "REO" = 'Total_REO_Sale',
                                 "TPS" = 'Total_TPS',
                                 "Completed Foreclosure" = 'Total_Completed_FCL')),
-              plotOutput("reo_map",
-                         height = 500,
-                         click='plot1_click',
-                         brush = brushOpts(
-                           id = "plot1_brush",
-                           resetOnNew = TRUE
-                         )
+              plotOutput("map",
+                         height = 500
                          ),
+              downloadButton('downloadImage', label = 'Download Image'),
               dataTableOutput("reo_table")
-              )
+              ),
+     tabPanel("Interactive Visualization",
+              plotOutput("plot2",
+                         height = 500,
+                         click = 'plot2_click',
+                         brush = brushOpts(
+                           id = 'plot2_brush',
+                           resetOnNew = TRUE
+                         )))
    )
 )
 
@@ -105,17 +110,7 @@ server <- function(input, output) {
    })
    
    
-   
-   output$table <- renderDataTable({
-     if (is.null(inFile()))
-       return(NULL)
-     upload_data()
-   })
-   
-   output$columns <- renderPrint({file_columns()})
-   
-   
-   output$reo_map <- renderPlot({
+   final_map <- function(){
      ggplot(state_map, aes(map_id = region)) +
        geom_map(fill="white", map=state_map, color="black") +
        geom_map(data=agg_data(), aes(fill = agg_data()[input$type]), map = state_map, color ="black") +
@@ -128,8 +123,34 @@ server <- function(input, output) {
        scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint=20000) +
        guides(fill = guide_colorbar(barwidth = 20, barheight = .5)) + 
        theme(panel.background=element_rect(fill='transparent',color=NA),plot.background=element_rect(fill='transparent',colour=NA),panel.grid.minor = element_blank(), panel.grid.major = element_blank()) +
-       ggtitle(paste(input$type, "By State", collapse=' ')) 
+       ggtitle(paste(input$type, "By State", collapse=' '))
+   }
+   
+   
+   
+   output$table <- renderDataTable({
+     if (is.null(inFile()))
+       return(NULL)
+     upload_data()
    })
+   
+   output$columns <- renderPrint({file_columns()})
+   
+   
+   output$map <- renderPlot({
+     final_map()
+   })
+   
+   output$downloadImage <- downloadHandler(
+     filename = function(){
+       paste(input$type,'_',input$year,'.png',sep='',collapse=NULL)
+       },
+     content = function(file) {
+       png(file,width=1300,height=960,units="px",bg = "transparent")
+       print(grid.arrange(final_map(),ncol=1))
+       dev.off()
+     }
+   )
    
    output$reo_table <- renderDataTable({
      if (is.null(inFile()))
@@ -137,8 +158,24 @@ server <- function(input, output) {
      agg_data()
    })
    
+   output$plot2 <- renderPlot({
+     ggplot(mtcars, aes(wt, mpg)) +
+     geom_point() +
+     coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand=FALSE)
+   })
    
    
+   observeEvent(input$plot2_click, {
+     brush <- input$plot2_brush
+     if (!is.null(brush)) {
+       ranges$x <- c(brush$xmin, brush$xmax)
+       ranges$y <- c(brush$ymin, brush$ymax)
+       
+     } else {
+       ranges$x <- NULL
+       ranges$y <- NULL
+     }
+   })
   
 }
 
