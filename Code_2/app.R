@@ -13,6 +13,7 @@ require(gridExtra)
 require(maps)
 library(mapproj)
 library(ggplot2)
+library(shinyjs)
 
 ### Global Variables ###
 
@@ -60,22 +61,34 @@ ui <- fluidPage(
               plotOutput("map",
                          height = 500
                          ),
-              downloadButton('downloadImage', label = 'Download Image'),
+              numericInput("width",
+                           "Choose the width of your downloaded image",
+                           value=10,
+                           min =5,
+                           max = 50),
+              numericInput("height",
+                           "Choose the height of your downloaded image",
+                           value=10,
+                           min =5,
+                           max = 50),
+              downloadButton(outputId= 'downloadplot', label = 'Download Image'),
               dataTableOutput("reo_table")
               ),
      tabPanel("Interactive Visualization",
+              
               plotOutput("plot2",
                          height = 500,
                          click = 'plot2_click',
                          brush = brushOpts(
                            id = 'plot2_brush',
                            resetOnNew = TRUE
-                         )))
+                         ))
+              )
    )
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
    ranges <- reactiveValues(x = NULL, y = NULL)
    inFile <- reactive({input$file})
    file_path <- reactive({inFile()$datapath})
@@ -141,14 +154,17 @@ server <- function(input, output) {
      final_map()
    })
    
-   output$downloadImage <- downloadHandler(
+   dim <- reactiveValues()
+   
+   output$downloadplot <- downloadHandler(
      filename = function(){
-       paste(input$type,'_',input$year,'.png',sep='',collapse=NULL)
+       paste0(input$type,'_',input$year,'.png')
        },
      content = function(file) {
-       png(file,width=1300,height=960,units="px",bg = "transparent")
-       print(grid.arrange(final_map(),ncol=1))
-       dev.off()
+       device <- function(...,width,height){
+         grDevices::png(...,width=width,height=height,res=300,units='in')
+       }
+       ggsave(file,plot=final_map(),height=input$height,width=input$width,device=device)
      }
    )
    
@@ -176,6 +192,8 @@ server <- function(input, output) {
        ranges$y <- NULL
      }
    })
+   
+   session$onSessionEnded(stopApp)
   
 }
 
