@@ -138,7 +138,7 @@ server <- function(input, output, session) {
        scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint=20000) +
        guides(fill = guide_colorbar(barwidth = 20, barheight = .5)) + 
        theme(panel.background=element_rect(fill='transparent',color=NA),plot.background=element_rect(fill='transparent',colour=NA),panel.grid.minor = element_blank(), panel.grid.major = element_blank()) +
-       ggtitle(paste(input$type, "By State", collapse=' '))
+       ggtitle(paste(input$type, "By State", input$year, collapse=' '))
    }
    
    
