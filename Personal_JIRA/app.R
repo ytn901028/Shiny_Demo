@@ -28,7 +28,7 @@ ui <- fluidPage(
     tabPanel("Open Tickets",
              dataTableOutput("open_tickets")
     ),
-    tabPanel("Interactive Visualization",
+    tabPanel("Closed Tickets",
              
              plotOutput("plot2",
                         height = 500,
@@ -43,18 +43,24 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-   new_ticket <- reactiveValues(df=NULL, summary=NULL, description=NULL, point=NULL)
-   #open_list <- eventReactive(input$create,
-   #                            {
-   #                            new_ticket <- c(summary(), description(), priority, point())
-   #                            df <- rbind(df, new_ticket)
-   #                          })
-   observeEvent(input$clear,
-                {
-                  input$summary <- NULL
-                  input$description <- NULL
-                  input$point <- NULL
-                })
+   summary <- reactive({input$summary})
+   description <- reactive({input$description})
+   point <- reactive({input$point})
+   df <- reactiveValues(data=NULL)
+   open_list <- eventReactive(input$create,
+                              {
+                                  new_ticket <- c(summary(), description(), input$priority, point())
+                                  df$data <- data.frame(rbind(df$data, new_ticket),
+                                                        stringsAsFactors = FALSE)
+                                  setNames(df$data, c("Summary","Description","Priority","Point"))
+                                   
+                              })
+   output$open_tickets <- renderDataTable({
+     if(is.null(open_list()))
+       return(NULL)
+     open_list()
+   }
+   )
   
    session$onSessionEnded(stopApp)
 }
