@@ -6,8 +6,13 @@
 #
 #    http://shiny.rstudio.com/
 #
+# https://stackoverflow.com/questions/19042192/checkbox-on-table-or-dataframe (adding checkbox)
+
+Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_131')
 
 library(shiny)
+library(ReporteRs)
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
