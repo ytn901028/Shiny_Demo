@@ -9,6 +9,7 @@
 # https://stackoverflow.com/questions/19042192/checkbox-on-table-or-dataframe (adding checkbox)
 
 Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_131')
+#Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_131')
 
 library(shiny)
 library(ReporteRs)
@@ -27,21 +28,17 @@ ui <- fluidPage(
                                `Low` = "Low")),
              textInput('description',label='Description of the Ticket'),
              textInput('point', label = 'Point of the Ticket'),
+             checkboxInput("confirm_creation", "Confirm to create ticket"),
              actionButton('create','Create'),
              actionButton('clear', 'Clear')
     ),
     tabPanel("Open Tickets",
-             dataTableOutput("open_tickets")
+             #dataTableOutput("open_tickets")
+             tableOutput("open_tickets"),
+             actionButton('close', 'Close Tickets')
     ),
     tabPanel("Closed Tickets",
-             
-             plotOutput("plot2",
-                        height = 500,
-                        click = 'plot2_click',
-                        brush = brushOpts(
-                          id = 'plot2_brush',
-                          resetOnNew = TRUE
-                        ))
+             tableOutput("closed_tickets")
     )
   )
 )
@@ -51,21 +48,62 @@ server <- function(input, output, session) {
    summary <- reactive({input$summary})
    description <- reactive({input$description})
    point <- reactive({input$point})
-   df <- reactiveValues(data=NULL)
+   ticket_number <- reactive({input$create})
+   open_df <- reactiveValues(data=NULL)
+   closed_df <- reactiveValues(data=NULL)
+   
    open_list <- eventReactive(input$create,
-                              {
-                                  new_ticket <- c(summary(), description(), input$priority, point())
-                                  df$data <- data.frame(rbind(df$data, new_ticket),
-                                                        stringsAsFactors = FALSE)
-                                  setNames(df$data, c("Summary","Description","Priority","Point"))
+                               {   #ticket_number <-  paste0('<label><input type="checkbox" id="check"', 
+                                  #                          ticket_number(), 
+                                  #                          '"> <span>', 
+                                  #                          ticket_number(), 
+                                  #                          '</span></label>')
+                                if (input$confirm_creation) 
+                                   new_ticket <- c(ticket_number(), summary(), description(), input$priority, point())
+                                   open_df$data <- data.frame(rbind(open_df$data, new_ticket),
+                                                         stringsAsFactors = FALSE)
+                                   setNames(open_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
                                    
+                               })
+   
+   
+   closed_list <- eventReactive(input$close,
+                              { 
+                                res <- unlist(lapply(1:nrow(open_list()),
+                                                     function(i) input[[paste0("check", open_list()[i,1])]]))
+                                raw <- vanilla.table(open_list())
+                                closed <- raw[res]
+                                
                               })
-   output$open_tickets <- renderDataTable({
+   #output$open_tickets <- renderDataTable({
+   #   if(is.null(open_list()))
+   #     return(NULL)
+   #   open_list()
+   #}
+   #)
+   output$open_tickets <- renderFlexTable({
      if(is.null(open_list()))
+        return(NULL)
+     raw_ticket <- open_list()
+     raw_ticket$Check <- paste0('<label><input type="checkbox" id="check',raw_ticket$Ticket_Number,'"></label>')
+     
+     clean_ticket <- vanilla.table(raw_ticket)
+     clean_ticket[, "Check", to = "header"] <- parLeft()
+     clean_ticket[, "Check"] <- parCenter()
+     clean_ticket[, "Ticket_Number"] <- parCenter()
+     clean_ticket[, "Summary"] <- parCenter()
+     clean_ticket[, "Description"] <- parCenter()
+     clean_ticket[, "Priority"] <- parCenter()
+     clean_ticket[, "Point"] <- parCenter()
+     return(clean_ticket)
+   })
+   
+   output$closed_tickets <- renderPrint({
+     if(is.null(closed_list()))
        return(NULL)
-     open_list()
-   }
-   )
+     print(closed_list())
+   })
+  
   
    session$onSessionEnded(stopApp)
 }
