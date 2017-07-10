@@ -71,12 +71,6 @@ server <- function(input, output, session) {
                               { 
                                 res <- unlist(lapply(1:nrow(open_list()),
                                                      function(i) input[[paste0("check", open_list()[i,1])]]))
-<<<<<<< HEAD
-                                raw <- data.frame(open_list())
-                                closed <- raw[res]
-=======
->>>>>>> 56d510ebafc20fab0a23d46c7cfb107f5bf2c73f
-                                
                                 closed_ticket <- open_list()[res,]
                                 closed_ticket <- open_df$data[res,]
                                 closed_df$data <- data.frame(rbind(closed_df$data, closed_ticket),
