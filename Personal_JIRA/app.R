@@ -38,7 +38,7 @@ ui <- fluidPage(
              actionButton('close', 'Close Tickets')
     ),
     tabPanel("Closed Tickets",
-             tableOutput("closed_tickets")
+             dataTableOutput("closed_tickets")
     )
   )
 )
@@ -71,10 +71,17 @@ server <- function(input, output, session) {
                               { 
                                 res <- unlist(lapply(1:nrow(open_list()),
                                                      function(i) input[[paste0("check", open_list()[i,1])]]))
-                                raw <- vanilla.table(open_list())
-                                closed <- raw[res]
                                 
+                                closed_ticket <- open_list()[res,]
+                                closed_ticket <- open_df$data[res,]
+                                closed_df$data <- data.frame(rbind(closed_df$data, closed_ticket),
+                                                           stringsAsFactors = FALSE)
+                                setNames(closed_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
+                                
+            
                               })
+   
+   
    #output$open_tickets <- renderDataTable({
    #   if(is.null(open_list()))
    #     return(NULL)
@@ -86,7 +93,6 @@ server <- function(input, output, session) {
         return(NULL)
      raw_ticket <- open_list()
      raw_ticket$Check <- paste0('<label><input type="checkbox" id="check',raw_ticket$Ticket_Number,'"></label>')
-     
      clean_ticket <- vanilla.table(raw_ticket)
      clean_ticket[, "Check", to = "header"] <- parLeft()
      clean_ticket[, "Check"] <- parCenter()
@@ -96,12 +102,15 @@ server <- function(input, output, session) {
      clean_ticket[, "Priority"] <- parCenter()
      clean_ticket[, "Point"] <- parCenter()
      return(clean_ticket)
+
    })
    
-   output$closed_tickets <- renderPrint({
+   
+
+   output$closed_tickets <- renderDataTable({
      if(is.null(closed_list()))
        return(NULL)
-     print(closed_list())
+     closed_list()
    })
   
   
