@@ -15,11 +15,12 @@ library(shiny)
 library(ReporteRs)
 
 
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
    
   navlistPanel(
-    tabPanel("Ticket Creation",
+    tabPanel("Create Ticket",
              textInput('summary',label='Summary'),
              selectInput("priority",
                          "Priority",
@@ -28,16 +29,16 @@ ui <- fluidPage(
                                `Low` = "Low")),
              textInput('description',label='Description of the Ticket'),
              textInput('point', label = 'Point of the Ticket'),
-             checkboxInput("confirm_creation", "Confirm to create ticket"),
+             #checkboxInput("confirm_creation", "Confirm to create ticket"),
              actionButton('create','Create'),
              actionButton('clear', 'Clear')
     ),
     tabPanel("Open Tickets",
-             #dataTableOutput("open_tickets")
              tableOutput("open_tickets"),
              actionButton('close', 'Close Tickets')
     ),
     tabPanel("Closed Tickets",
+             
              dataTableOutput("closed_tickets")
     )
   )
@@ -58,7 +59,7 @@ server <- function(input, output, session) {
                                   #                          '"> <span>', 
                                   #                          ticket_number(), 
                                   #                          '</span></label>')
-                                if (input$confirm_creation) 
+                                #if (input$confirm_creation) 
                                    new_ticket <- c(ticket_number(), summary(), description(), input$priority, point())
                                    open_df$data <- data.frame(rbind(open_df$data, new_ticket),
                                                          stringsAsFactors = FALSE)
@@ -69,14 +70,14 @@ server <- function(input, output, session) {
    
    closed_list <- eventReactive(input$close,
                               { 
-                                res <- unlist(lapply(1:nrow(open_list()),
-                                                     function(i) input[[paste0("check", open_list()[i,1])]]))
-                                closed_ticket <- open_list()[res,]
+                                #res <- unlist(lapply(1:nrow(open_list()),
+                                #                     function(i) input[[paste0("check", open_list()[i,1])]]))
+                                res <- unlist(lapply(1:nrow(open_df$data),
+                                                                          function(i) input[[paste0("check", open_df$data[i,1])]]))
                                 closed_ticket <- open_df$data[res,]
                                 closed_df$data <- data.frame(rbind(closed_df$data, closed_ticket),
                                                            stringsAsFactors = FALSE)
                                 setNames(closed_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
-                                
             
                               })
    
@@ -89,18 +90,26 @@ server <- function(input, output, session) {
    #)
    output$open_tickets <- renderFlexTable({
      if(is.null(open_list()))
-        return(NULL)
+         return()
      raw_ticket <- open_list()
+
      raw_ticket$Check <- paste0('<label><input type="checkbox" id="check',raw_ticket$Ticket_Number,'"></label>')
-     clean_ticket <- vanilla.table(raw_ticket)
-     clean_ticket[, "Check", to = "header"] <- parLeft()
-     clean_ticket[, "Check"] <- parCenter()
-     clean_ticket[, "Ticket_Number"] <- parCenter()
-     clean_ticket[, "Summary"] <- parCenter()
-     clean_ticket[, "Description"] <- parCenter()
-     clean_ticket[, "Priority"] <- parCenter()
-     clean_ticket[, "Point"] <- parCenter()
+     res <- unlist(lapply(1:nrow(open_df$data),
+                          function(i) input[[paste0("check", open_df$data[i,1])]]))
+     if (any(res) & input$close == T)
+        raw_ticket <- raw_ticket[!res,]
+     if (nrow(raw_ticket) > 0)
+       clean_ticket <- vanilla.table(raw_ticket)
+       clean_ticket[, "Check", to = "header"] <- parLeft()
+       clean_ticket[, "Check"] <- parCenter()
+       clean_ticket[, "Ticket_Number"] <- parCenter()
+       clean_ticket[, "Summary"] <- parCenter()
+       clean_ticket[, "Description"] <- parCenter()
+       clean_ticket[, "Priority"] <- parCenter()
+       clean_ticket[, "Point"] <- parCenter()
+      
      return(clean_ticket)
+     
 
    })
    
@@ -108,8 +117,9 @@ server <- function(input, output, session) {
 
    output$closed_tickets <- renderDataTable({
      if(is.null(closed_list()))
-       return(NULL)
+        return(NULL)
      closed_list()
+     
    })
   
   
