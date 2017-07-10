@@ -71,7 +71,7 @@ server <- function(input, output, session) {
                               { 
                                 res <- unlist(lapply(1:nrow(open_list()),
                                                      function(i) input[[paste0("check", open_list()[i,1])]]))
-                                raw <- vanilla.table(open_list())
+                                raw <- data.frame(open_list())
                                 closed <- raw[res]
                                 
                               })
