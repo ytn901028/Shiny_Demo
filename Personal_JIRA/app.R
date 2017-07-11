@@ -77,6 +77,7 @@ server <- function(input, output, session) {
                                 closed_ticket <- open_df$data[res,]
                                 closed_df$data <- data.frame(rbind(closed_df$data, closed_ticket),
                                                            stringsAsFactors = FALSE)
+                                closed_df$data <- unique(closed_df$data)
                                 setNames(closed_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
             
                               })
