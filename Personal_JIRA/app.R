@@ -40,6 +40,7 @@ ui <- fluidPage(
     tabPanel("Closed Tickets",
              
              dataTableOutput("closed_tickets")
+             #textOutput("closed_tickets")
     )
   )
 )
@@ -50,8 +51,8 @@ server <- function(input, output, session) {
    description <- reactive({input$description})
    point <- reactive({input$point})
    ticket_number <- reactive({input$create})
-   open_df <- reactiveValues(data=NULL)
-   closed_df <- reactiveValues(data=NULL)
+   df <- reactiveValues(open_data=NULL, closed_data = NULL)
+   
    
    open_list <- eventReactive(input$create,
                                {   #ticket_number <-  paste0('<label><input type="checkbox" id="check"', 
@@ -59,12 +60,16 @@ server <- function(input, output, session) {
                                   #                          '"> <span>', 
                                   #                          ticket_number(), 
                                   #                          '</span></label>')
-                                #if (input$confirm_creation) 
-                                   new_ticket <- c(ticket_number(), summary(), description(), input$priority, point())
-                                   open_df$data <- data.frame(rbind(open_df$data, new_ticket),
+                                #if (input$confirm_creation)
+                                   check <- paste0('<label><input type="checkbox" id="check',ticket_number(),'"></label>')
+                                   new_ticket <- c(ticket_number(), summary(), description(), input$priority, point(), check)
+                                   df$open_data <- data.frame(rbind(df$open_data, new_ticket),
                                                          stringsAsFactors = FALSE)
-                                   setNames(open_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
+                                   setNames(df$open_data, c("Ticket_Number","Summary","Description","Priority","Point", "Check"))
                                    
+                                   
+                                   
+                              
                                })
    
    
@@ -72,54 +77,60 @@ server <- function(input, output, session) {
                               { 
                                 #res <- unlist(lapply(1:nrow(open_list()),
                                 #                     function(i) input[[paste0("check", open_list()[i,1])]]))
-                                res <- unlist(lapply(1:nrow(open_df$data),
-                                                                          function(i) input[[paste0("check", open_df$data[i,1])]]))
-                                closed_ticket <- open_df$data[res,]
-                                closed_df$data <- data.frame(rbind(closed_df$data, closed_ticket),
+                                
+                                
+                                res <- unlist(lapply(1:nrow(df$open_data),
+                                                                    function(i) input[[paste0("check", df$open_data[i,1])]]))
+
+                                
+                                
+                                closed_ticket <- open_list()[res,]
+                                closed_ticket <- subset(closed_ticket, select = seq(1,5))
+                                df$closed_data <- data.frame(rbind(df$closed_data, closed_ticket),
                                                            stringsAsFactors = FALSE)
+<<<<<<< HEAD
                                 closed_df$data <- unique(closed_df$data)
                                 setNames(closed_df$data, c("Ticket_Number","Summary","Description","Priority","Point"))
             
+=======
+                                setNames(df$closed_data, c("Ticket_Number","Summary","Description","Priority","Point"))
+                                
+                                
+                                
+>>>>>>> d8183990f39c03eb66e6576338133a0cc6a5306c
                               })
    
-   
-   #output$open_tickets <- renderDataTable({
-   #   if(is.null(open_list()))
-   #     return(NULL)
-   #   open_list()
-   #}
-   #)
-   output$open_tickets <- renderFlexTable({
-     if(is.null(open_list()))
-         return()
-     raw_ticket <- open_list()
 
-     raw_ticket$Check <- paste0('<label><input type="checkbox" id="check',raw_ticket$Ticket_Number,'"></label>')
-     res <- unlist(lapply(1:nrow(open_df$data),
-                          function(i) input[[paste0("check", open_df$data[i,1])]]))
-     if (any(res) & input$close == T)
-        raw_ticket <- raw_ticket[!res,]
-     if (nrow(raw_ticket) > 0)
-       clean_ticket <- vanilla.table(raw_ticket)
-       clean_ticket[, "Check", to = "header"] <- parLeft()
-       clean_ticket[, "Check"] <- parCenter()
-       clean_ticket[, "Ticket_Number"] <- parCenter()
-       clean_ticket[, "Summary"] <- parCenter()
-       clean_ticket[, "Description"] <- parCenter()
-       clean_ticket[, "Priority"] <- parCenter()
-       clean_ticket[, "Point"] <- parCenter()
-      
+
+
+   
+   
+   output$open_tickets <- renderFlexTable({
+      if(is.null(open_list()))
+       return(NULL)
+     temp <- open_list()
+     res <- unlist(lapply(1:nrow(df$open_data),
+                         function(i) input[[paste0("check", df$open_data[i,1])]]))
+     if (any(res) & input$close > 0)
+         temp <- temp[!res,]
+     clean_ticket <- vanilla.table(temp)
+     clean_ticket[, "Check", to = "header"] <- parLeft()
+     clean_ticket[, "Check"] <- parCenter()
+     clean_ticket[, "Ticket_Number"] <- parCenter()
+     clean_ticket[, "Summary"] <- parCenter()
+     clean_ticket[, "Description"] <- parCenter()
+     clean_ticket[, "Priority"] <- parCenter()
+     clean_ticket[, "Point"] <- parCenter()
      return(clean_ticket)
      
-
-   })
-   
-   
+   }
+   )
+     
 
    output$closed_tickets <- renderDataTable({
-     if(is.null(closed_list()))
+      if(is.null(closed_list()))
         return(NULL)
-     closed_list()
+      unique(closed_list())
      
    })
   
