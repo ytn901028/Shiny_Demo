@@ -34,7 +34,6 @@ if (interactive()) {
                                `Low` = "Low")),
              textInput('description',label='Description of the Ticket'),
              textInput('point', label = 'Point of the Ticket'),
-             #checkboxInput("confirm_creation", "Confirm to create ticket"),
              actionButton('create','Create'),
              actionButton('clear', 'Clear')
       ),
@@ -45,7 +44,6 @@ if (interactive()) {
       tabPanel("Closed Tickets",
              
              dataTableOutput("closed_tickets")
-             #textOutput("closed_tickets")
       )
     )
   )
@@ -60,54 +58,49 @@ if (interactive()) {
      point <- reactive({input$point})
      ticket_number <- reactive({input$create})
      status <- reactive({input$status})
-     df <- reactiveValues(open_data=NULL, closed_data = NULL)
+     df <- reactiveValues()
+     df$open_data <- data.frame(Select=NA, 
+                                Ticket_Number=NA,
+                                Summary=NA,
+                                Description=NA,
+                                Priority=NA,
+                                Point=NA)
      
-     onevent("mouseleave", "close", reset())  
-   
-   
-     open_list <- eventReactive(input$create,
-                               {   #ticket_number <-  paste0('<label><input type="checkbox" id="check"', 
-                                  #                          ticket_number(), 
-                                  #                          '"> <span>', 
-                                  #                          ticket_number(), 
-                                  #                          '</span></label>')
-                                #if (input$confirm_creation)
-                                   check <- paste0('<label><input type="checkbox" id="check',ticket_number(),'"></label>')
-                                   new_ticket <- c(ticket_number(), summary(), description(), input$priority, point(), check)
-                                   df$open_data <- data.frame(rbind(df$open_data, new_ticket),
-                                                         stringsAsFactors = FALSE)
-                                   setNames(df$open_data, c("Ticket_Number","Summary","Description","Priority","Point", "Check"))
+     observeEvent(input$create,
+                               {  
+                                   select <- paste0('<label><input type="checkbox" id="check',ticket_number(),'"></label>')
+                                   new_ticket <- isolate(c(select, input$create, input$summary, input$description, input$priority, input$point))
+                                   isolate(df$open_data <- data.frame(rbind(df$open_data, new_ticket), stringsAsFactors = FALSE))
                                    
                               
                                })
    
-   
-     closed_list <- eventReactive(input$close,
+  
+     observeEvent(input$close,
                               { 
-                                res <- unlist(lapply(1:nrow(open_list()),
-                                                                    function(i) input[[paste0("check", open_list()[i,1])]]))
-
-                                closed_ticket <- open_list()[res,]
-                                closed_ticket <- subset(closed_ticket, select = seq(1,5))
-                                df$closed_data <- data.frame(rbind(df$closed_data, closed_ticket),
-                                                           stringsAsFactors = FALSE)
-                                setNames(df$closed_data, c("Ticket_Number","Summary","Description","Priority","Point"))
-                
-               
+                                if (is.na(df$open_data[1,1]))
+                                    df$open_data <- df$open_data[-1,]
+                                res <- unlist(lapply(1:nrow(df$open_data), 
+                                                             function(i) input[[paste0("check", df$open_data[i,2])]]))
+                                closed_ticket <- df$open_data[res,]
+                                closed_ticket <- subset(closed_ticket, select = seq(2,6))
+                                isolate(df$closed_data <- data.frame(rbind(df$closed_data, closed_ticket),
+                                                           stringsAsFactors = FALSE))
+        
+                                isolate(df$open_data <- df$open_data[!res, ])  
+                                  
                               })
+     
 
    
      output$open_tickets <- renderFlexTable({
-       if(is.null(open_list()))
+       if(is.null(df$open_data))
          return(NULL)
-       temp <- open_list()
-       res <- unlist(lapply(1:nrow(open_list()),
-                            function(i) input[[paste0("check", open_list()[i,1])]]))
-       if (any(res) & input$close > 0)
-         temp <- temp[!res,]
+       temp <- df$open_data
+
        clean_ticket <- vanilla.table(temp)
-       clean_ticket[, "Check", to = "header"] <- parLeft()
-       clean_ticket[, "Check"] <- parCenter()
+       clean_ticket[, "Select", to = "header"] <- parLeft()
+       clean_ticket[, "Select"] <- parCenter()
        clean_ticket[, "Ticket_Number"] <- parCenter()
        clean_ticket[, "Summary"] <- parCenter()
        clean_ticket[, "Description"] <- parCenter()
@@ -120,9 +113,9 @@ if (interactive()) {
      
 
      output$closed_tickets <- renderDataTable({
-        if(is.null(closed_list()))
+        if(is.null(df$closed_data))
           return(NULL)
-        unique(closed_list())
+        unique(df$closed_data)
      
      })
   
