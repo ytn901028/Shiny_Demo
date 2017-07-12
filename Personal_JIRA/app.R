@@ -38,11 +38,12 @@ if (interactive()) {
              actionButton('clear', 'Clear')
       ),
       tabPanel("Open_tickets",
+             dateInput('date',"Date:"),
              tableOutput("open_tickets"),
              actionButton('close', 'Close Tickets')
       ),
       tabPanel("Closed Tickets",
-             
+             dateInput('date',"Date:"),
              dataTableOutput("closed_tickets")
       )
     )
