@@ -41,7 +41,6 @@ if (interactive()) {
       tabPanel("Open_tickets",
              tableOutput("open_tickets"),
              actionButton('close', 'Close Tickets')
-             
       ),
       tabPanel("Closed Tickets",
              
@@ -53,12 +52,17 @@ if (interactive()) {
 
 # Define server logic required to draw a histogram
   server <- function(input, output, session) {
+    
+     
+    
      summary <- reactive({input$summary})
      description <- reactive({input$description})
      point <- reactive({input$point})
      ticket_number <- reactive({input$create})
      status <- reactive({input$status})
      df <- reactiveValues(open_data=NULL, closed_data = NULL)
+     
+     onevent("mouseleave", "close", reset())  
    
    
      open_list <- eventReactive(input$create,
@@ -88,19 +92,19 @@ if (interactive()) {
                                 df$closed_data <- data.frame(rbind(df$closed_data, closed_ticket),
                                                            stringsAsFactors = FALSE)
                                 setNames(df$closed_data, c("Ticket_Number","Summary","Description","Priority","Point"))
-
+                
                
                               })
-   
 
-     #onevent("mouseleave", "close", reset("status"))
-
-   
    
      output$open_tickets <- renderFlexTable({
        if(is.null(open_list()))
          return(NULL)
        temp <- open_list()
+       res <- unlist(lapply(1:nrow(open_list()),
+                            function(i) input[[paste0("check", open_list()[i,1])]]))
+       if (any(res) & input$close > 0)
+         temp <- temp[!res,]
        clean_ticket <- vanilla.table(temp)
        clean_ticket[, "Check", to = "header"] <- parLeft()
        clean_ticket[, "Check"] <- parCenter()
