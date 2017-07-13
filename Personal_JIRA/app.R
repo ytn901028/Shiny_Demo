@@ -88,7 +88,14 @@ if (interactive()) {
                                 isolate(df$closed_data <- data.frame(rbind(df$closed_data, closed_ticket),
                                                            stringsAsFactors = FALSE))
         
-                                isolate(df$open_data <- df$open_data[!res, ])  
+                                isolate(df$open_data <- df$open_data[!res, ])
+                                if (nrow(df$open_data) == 0)
+                                  df$open_data <- isolate(data.frame(Select=NA, 
+                                             Ticket_Number=NA,
+                                             Summary=NA,
+                                             Description=NA,
+                                             Priority=NA,
+                                             Point=NA))
                                   
                               })
      
