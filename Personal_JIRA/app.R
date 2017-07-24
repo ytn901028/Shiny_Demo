@@ -8,8 +8,8 @@
 #
 # https://stackoverflow.com/questions/19042192/checkbox-on-table-or-dataframe (adding checkbox)
 
-Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_131')
-#Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_131')
+Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_141')
+#Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_141')
 
 
 
@@ -40,7 +40,8 @@ if (interactive()) {
       tabPanel("Open_tickets",
              dateInput('date',"Date:"),
              tableOutput("open_tickets"),
-             actionButton('close', 'Close Tickets')
+             actionButton('close', 'Close Tickets'),
+             actionButton('remove', 'Remove Ticket')
       ),
       tabPanel("Closed Tickets",
              dateInput('date',"Date:"),
@@ -98,6 +99,24 @@ if (interactive()) {
                                              Point=NA))
                                   
                               })
+     
+     observeEvent(input$remove,
+                  { 
+                    if (is.na(df$open_data[1,1]))
+                      df$open_data <- df$open_data[-1,]
+                    res <- unlist(lapply(1:nrow(df$open_data), 
+                                         function(i) input[[paste0("check", df$open_data[i,2])]]))
+                    
+                    isolate(df$open_data <- df$open_data[!res, ])
+                    if (nrow(df$open_data) == 0)
+                      df$open_data <- isolate(data.frame(Select=NA, 
+                                                         Ticket_Number=NA,
+                                                         Summary=NA,
+                                                         Description=NA,
+                                                         Priority=NA,
+                                                         Point=NA))
+                    
+                  })
      
 
    
