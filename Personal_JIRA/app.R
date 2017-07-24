@@ -34,8 +34,7 @@ if (interactive()) {
                                `Low` = "Low")),
              textInput('description',label='Description of the Ticket'),
              textInput('point', label = 'Point of the Ticket'),
-             actionButton('create','Create'),
-             actionButton('clear', 'Clear')
+             actionButton('create','Create')
       ),
       tabPanel("Open_tickets",
              dateInput('date',"Date:"),
