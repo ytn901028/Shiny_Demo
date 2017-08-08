@@ -8,8 +8,8 @@
 #
 # https://stackoverflow.com/questions/19042192/checkbox-on-table-or-dataframe (adding checkbox)
 
-Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_141')
-#Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_141')
+Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_144')
+#Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_144')
 
 
 
