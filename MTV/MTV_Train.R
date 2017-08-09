@@ -9,9 +9,13 @@ data$Lot.Size[which(is.na(data$Lot.Size))] <- median(data$Lot.Size,na.rm=T)
 data$Last.Sale.Date <- as.Date(data$Last.Sale.Date,format='%m/%d/%Y')
 data$Days_Diff <- rundate - data$Last.Sale.Date
 
-data <- data[,8:ncol(data)]
+data <- subset(data,Zip==94043)
+data <- data[,6:ncol(data)]
+
+
 
 train <- data[1:(nrow(data)-2),]
+
 test <- data[(nrow(data)-1):nrow(data),]
 
 formula = {as.formula(Last.Sale.Price 
@@ -41,8 +45,8 @@ y <- train$Last.Sale.Price
 
 
 model <- lm(formula=formula,data=train)
-#model2 <- glmnet(x,y,alpha=0.5,nlambda=50,family='gaussian',lambda.min.ratio = 0.01)
-model2 <- glmnet(x,y,alpha=0.5,lambda=46846.52,family='gaussian')
+#model2 <- glmnet(x,y,alpha=0.5,nlambda=10,family='gaussian',lambda.min.ratio = 0.0001)
+model2 <- glmnet(x,y,alpha=0.5,lambda=90605.2,family='gaussian')
 
 predict(model,test)
 
